@@ -57,4 +57,9 @@ class AuthService
 
         return true;
     }
+
+    public function logout(): void {
+        $_SESSION = [];
+        session_destroy();
+    }
 }

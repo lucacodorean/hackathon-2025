@@ -80,13 +80,18 @@ class AuthController extends BaseController
         return $this->view->render($response, 'auth/login.twig', [
             'message' => 'Invalid credentials',
             'color'   => 'red'
-        ]);
+        ])->withStatus(302);
     }
 
     public function logout(Request $request, Response $response): Response
     {
         // TODO: handle logout by clearing session data and destroying session
 
-        return $response->withHeader('Location', '/login')->withStatus(302);
+        $this->logger->info('Logout action requested');
+        $this->authService->logout();
+        return $this->view->render($response, 'auth/login.twig', [
+            'message' => 'You\'ve been logged out.',
+            'color'   => 'orange'
+        ])->withStatus(302);
     }
 }
