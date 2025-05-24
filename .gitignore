@@ -2,6 +2,6 @@
 .env
 .phpunit.result.cache
 vendor
-database/db.sqlite
+database/database.sqlite
 var/*
 !var/.gitkeep
