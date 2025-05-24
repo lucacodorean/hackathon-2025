@@ -47,7 +47,7 @@ class ExpenseService
             $offset, $pageSize);
 
         /// Making the method returns an array of Expense[]
-        return array_map(fn(array $r) => Expense::fromRow($r), $expenses);
+        return array_map(fn(array $row) => Expense::fromRow($row), $expenses);
     }
 
     public function create(

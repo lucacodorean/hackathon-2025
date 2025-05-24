@@ -108,27 +108,28 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         // then to apply the criterias on them.
         // The issue I had with the conditions was that when I got to filter based on start-date and end-date,
         // my initial implementation would get date_ field overwritten with the end-date. For that, the params
-        // received an indexation based on $i.
+        // received an indexation based on $index.
 
         $statement = 'SELECT * FROM expenses';
+        $params = [];
 
-        $i = 0;
+        $index = 0;
         if(!empty($criteria)) {
             $conds = [];
             foreach ($criteria as $colOp => $val) {
 
                 /// This part of the code will (hopefully) handle the comparison operations.
-                if (preg_match('/^(.+)\s+(>=|<=|<>|>|<|LIKE)$/i', $colOp, $m)) {
-                    [, $col, $op] = $m;
+                if (preg_match('/^(.+)\s+(>=|<=|<>|>|<|LIKE)$/i', $colOp, $match)) {
+                    [, $col, $op] = $match;
                 } else {
                     $col = $colOp;
                     $op  = '=';
                 }
 
-                $param    = ':' . preg_replace('/\W+/', '_', $colOp) . $i;
+                $param    = ':' . preg_replace('/\W+/', '_', $colOp) . $index;
                 $conds[]  = "`$col` $op $param";
                 $params[$param] = $val;
-                $i++;
+                $index++;
             }
             $statement .= ' WHERE ' . implode(' AND ', $conds);
         }
@@ -159,23 +160,23 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $statement    = "SELECT COUNT(id) AS cnt FROM expenses";
         $params = [];
 
-        $i = 0;
+        $index = 0;
         if(!empty($criteria)) {
             $conds = [];
             foreach ($criteria as $colOp => $val) {
 
                 /// This part of the code will (hopefully) handle the comparison operations.
-                if (preg_match('/^(.+)\s+(>=|<=|<>|>|<|LIKE)$/i', $colOp, $m)) {
-                    [, $col, $op] = $m;
+                if (preg_match('/^(.+)\s+(>=|<=|<>|>|<|LIKE)$/i', $colOp, $match)) {
+                    [, $col, $op] = $match;
                 } else {
                     $col = $colOp;
                     $op  = '=';
                 }
 
-                $param    = ':' . preg_replace('/\W+/', '_', $colOp) . $i;
+                $param    = ':' . preg_replace('/\W+/', '_', $colOp) . $index;
                 $conds[]  = "`$col` $op $param";
                 $params[$param] = $val;
-                $i++;
+                $index++;
             }
             $statement .= ' WHERE ' . implode(' AND ', $conds);
         }

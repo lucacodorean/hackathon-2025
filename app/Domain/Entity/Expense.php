@@ -44,15 +44,15 @@ final class Expense
 
 
     /// Converting from array entry to Expense entity.
-    public static function fromRow(array $r): self
+    public static function fromRow(array $row): self
     {
         return new self(
-            (int) $r['id'],
-            (int)$r['user_id'],
-            new DateTimeImmutable($r['date']),
-            $r['description'] ?? '',
-            (int) $r['amount_cents'],
-            $r['category'] ?? ''
+            (int) $row['id'],
+            (int)$row['user_id'],
+            new DateTimeImmutable($row['date']),
+            $row['description'] ?? '',
+            (int) $row['amount_cents'],
+            $row['category'] ?? ''
         );
     }
 }
