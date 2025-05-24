@@ -57,7 +57,6 @@ class ExpenseController extends BaseController
                 $page,
                 $pageSize
             );
-            $years = $this->expenseService->listExpenditureYears($user);
 
             return $this->render($response, 'expenses/index.twig', [
                 'currentUserId'         => $_SESSION['user_id'],
@@ -65,7 +64,7 @@ class ExpenseController extends BaseController
                 'expensesCount'         => count($expenses),
                 'selectedMonth'         => $selectedMonth,
                 'selectedYear'          => $selectedYear,
-                "years"                 => $years,
+                "years"                 => $this->expenseService->listExpenditureYears($user),
                 'page'     => $page,
                 'pageSize' => $pageSize,
             ]);
@@ -95,7 +94,10 @@ class ExpenseController extends BaseController
 
         $categories = $this->getCategories();
 
-        return $this->render($response, 'expenses/create.twig', ['categories' => $categories]);
+        return $this->render($response, 'expenses/create.twig', [
+            'currentUserId'         => $_SESSION['user_id'],
+            'categories' => $categories
+        ]);
     }
 
     public function store(Request $request, Response $response): Response

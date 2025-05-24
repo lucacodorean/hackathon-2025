@@ -101,6 +101,39 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $statement->execute([$id]);
     }
 
+    /**
+     * This function was created to get more reusability of handling the criteria.
+     *
+     * @param array<string,mixed> $criteria
+     * @return array{conds: string[], params: array<string,mixed>}
+     */
+    private function buildConditions(array $criteria): array
+    {
+        $index  = 0;
+        $conds  = [];
+        $params = [];
+
+        foreach ($criteria as $colOp => $val) {
+
+            if (preg_match('/^(.+)\s+(>=|<=|<>|>|<|LIKE)$/i', $colOp, $match)) {
+                [, $col, $op] = $match;
+            } else {
+                $col = $colOp;
+                $op  = '=';
+            }
+
+            $paramName        = ':' . preg_replace('/\W+/', '_', $colOp) . $index;
+            $conds[]          = "`$col` $op $paramName";
+            $params[$paramName] = $val;
+            $index++;
+        }
+
+        return [
+            'conds'  => $conds,
+            'params' => $params,
+        ];
+    }
+
     public function findBy(array $criteria, int $from, int $limit): array
     {
         // TODO: Implement findBy() method.
@@ -112,28 +145,10 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
         $statement = 'SELECT * FROM expenses';
         $params = [];
-
-        $index = 0;
         if(!empty($criteria)) {
-            $conds = [];
-            foreach ($criteria as $colOp => $val) {
-
-                /// This part of the code will (hopefully) handle the comparison operations.
-                if (preg_match('/^(.+)\s+(>=|<=|<>|>|<|LIKE)$/i', $colOp, $match)) {
-                    [, $col, $op] = $match;
-                } else {
-                    $col = $colOp;
-                    $op  = '=';
-                }
-
-                $param    = ':' . preg_replace('/\W+/', '_', $colOp) . $index;
-                $conds[]  = "`$col` $op $param";
-                $params[$param] = $val;
-                $index++;
-            }
+            list('conds' => $conds, 'params' => $params) = $this->buildConditions($criteria);
             $statement .= ' WHERE ' . implode(' AND ', $conds);
         }
-
 
         $statement .= ' LIMIT '.$from.', '.$limit;
 
@@ -145,7 +160,11 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         }
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(
+         function ($row) {
+            return $this->createExpenseFromData($row);
+        }, $array);
     }
 
 
@@ -160,24 +179,8 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $statement    = "SELECT COUNT(id) AS cnt FROM expenses";
         $params = [];
 
-        $index = 0;
         if(!empty($criteria)) {
-            $conds = [];
-            foreach ($criteria as $colOp => $val) {
-
-                /// This part of the code will (hopefully) handle the comparison operations.
-                if (preg_match('/^(.+)\s+(>=|<=|<>|>|<|LIKE)$/i', $colOp, $match)) {
-                    [, $col, $op] = $match;
-                } else {
-                    $col = $colOp;
-                    $op  = '=';
-                }
-
-                $param    = ':' . preg_replace('/\W+/', '_', $colOp) . $index;
-                $conds[]  = "`$col` $op $param";
-                $params[$param] = $val;
-                $index++;
-            }
+            list('conds' => $conds, 'params' => $params) = $this->buildConditions($criteria);
             $statement .= ' WHERE ' . implode(' AND ', $conds);
         }
 
@@ -209,19 +212,64 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
     public function sumAmountsByCategory(array $criteria): array
     {
         // TODO: Implement sumAmountsByCategory() method.
-        return [];
+        $statement    = "SELECT category, SUM(amount_cents)  FROM expenses";
+        $params = [];
+
+        if(!empty($criteria)) {
+            list('conds' => $conds, 'params' => $params) = $this->buildConditions($criteria);
+            $statement .= ' WHERE ' . implode(' AND ', $conds);
+        }
+
+        $statement .= ' GROUP BY category';
+
+        $stmt = $this->pdo->prepare($statement);
+        foreach ($params as $p => $v) {
+            $stmt->bindValue($p, $v);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function averageAmountsByCategory(array $criteria): array
     {
         // TODO: Implement averageAmountsByCategory() method.
-        return [];
+        $statement    = "SELECT category, AVG(amount_cents)  FROM expenses";
+        $params = [];
+
+        if(!empty($criteria)) {
+            list('conds' => $conds, 'params' => $params) = $this->buildConditions($criteria);
+            $statement .= ' WHERE ' . implode(' AND ', $conds);
+        }
+
+        $statement .= ' GROUP BY category';
+
+        $stmt = $this->pdo->prepare($statement);
+        foreach ($params as $p => $v) {
+            $stmt->bindValue($p, $v);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function sumAmounts(array $criteria): float
     {
         // TODO: Implement sumAmounts() method.
-        return 0;
+
+        $statement    = "SELECT SUM(amount_cents) FROM expenses";
+        $params = [];
+
+        if(!empty($criteria)) {
+            list('conds' => $conds, 'params' => $params) = $this->buildConditions($criteria);
+            $statement .= ' WHERE ' . implode(' AND ', $conds);
+        }
+
+        $stmt = $this->pdo->prepare($statement);
+        foreach ($params as $p => $v) {
+            $stmt->bindValue($p, $v);
+        }
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
     }
 
     /**

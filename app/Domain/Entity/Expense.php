@@ -41,18 +41,4 @@ final class Expense
     public function setDescription(string $description): void {
         $this->description = $description;
     }
-
-
-    /// Converting from array entry to Expense entity.
-    public static function fromRow(array $row): self
-    {
-        return new self(
-            (int) $row['id'],
-            (int)$row['user_id'],
-            new DateTimeImmutable($row['date']),
-            $row['description'] ?? '',
-            (int) $row['amount_cents'],
-            $row['category'] ?? ''
-        );
-    }
 }

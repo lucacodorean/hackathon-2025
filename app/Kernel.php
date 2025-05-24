@@ -6,6 +6,7 @@ namespace App;
 
 use App\Domain\Repository\ExpenseRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
+use App\Domain\Service\CategoryBudgetService;
 use App\Infrastructure\Persistence\PdoExpenseRepository;
 use App\Infrastructure\Persistence\PdoUserRepository;
 use DI\ContainerBuilder;
@@ -59,6 +60,8 @@ class Kernel
             // Map interfaces to concrete implementations
             UserRepositoryInterface::class    => autowire(PdoUserRepository::class),
             ExpenseRepositoryInterface::class => autowire(PdoExpenseRepository::class),
+
+            CategoryBudgetService::class => \DI\create(CategoryBudgetService::class)->constructor($_ENV['CATEGORY_BUDGETS'])
         ]);
         $container = $builder->build();
 

@@ -39,15 +39,13 @@ class ExpenseService
 
         $offset = ($pageNumber - 1) * $pageSize;
 
-        $expenses = $this->expenses->findBy([
+        return $this->expenses->findBy([
             "user_id" => $user->getId(),
             "date >=" => $startDate,
             "date <=" => $endDate,
             ],
-            $offset, $pageSize);
-
-        /// Making the method returns an array of Expense[]
-        return array_map(fn(array $row) => Expense::fromRow($row), $expenses);
+            $offset, $pageSize
+        );
     }
 
     public function create(
