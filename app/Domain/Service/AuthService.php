@@ -62,4 +62,8 @@ class AuthService
         $_SESSION = [];
         session_destroy();
     }
+
+    public function retrieveLogged(): ?User {
+        return $this->users->findByUsername($_SESSION['username']);
+    }
 }

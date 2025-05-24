@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Domain\Service\AuthService;
 use App\Domain\Service\ExpenseService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -16,6 +17,7 @@ class ExpenseController extends BaseController
     public function __construct(
         Twig $view,
         private readonly ExpenseService $expenseService,
+        private readonly AuthService $authService
     ) {
         parent::__construct($view);
     }
@@ -30,13 +32,25 @@ class ExpenseController extends BaseController
         // - use the expense service to fetch expenses for the current user
 
         // parse request parameters
-        $userId = 1; // TODO: obtain logged-in user ID from session
+        // TODO: obtain logged-in user ID from session
+        // Given that I saved the user_id post-login in user's session, it can be easily accessed.
+        $userId = $_SESSION["user_id"];
         $page = (int)($request->getQueryParams()['page'] ?? 1);
         $pageSize = (int)($request->getQueryParams()['pageSize'] ?? self::PAGE_SIZE);
 
-        $expenses = $this->expenseService->list($userId, $page, $pageSize);
+        $selectedYear = $request->getQueryParams()['year'] ?? date("Y");
+        $selectedMonth = $request->getQueryParams()['month'] ?? date("m");
+
+        $expenses = $this->expenseService->list(
+            $this->authService->retrieveLogged(),
+            intval($selectedYear),
+            intval($selectedMonth),
+            $page,
+            $pageSize
+        );
 
         return $this->render($response, 'expenses/index.twig', [
+            'currentUserId'         => $_SESSION['user_id'],
             'expenses' => $expenses,
             'page'     => $page,
             'pageSize' => $pageSize,
@@ -50,7 +64,15 @@ class ExpenseController extends BaseController
         // Hints:
         // - obtain the list of available categories from configuration and pass to the view
 
-        return $this->render($response, 'expenses/create.twig', ['categories' => []]);
+        /// Usiing the given hint, what I'm trying to do is to retrieve the categories from the env and then
+        /// map each entry separated by "," into an item itself.
+        $csv = $_ENV['EXPENSE_CATEGORIES'] ?? '';
+        $categories = array_filter(
+            array_map('trim', explode(',', $csv)),
+            fn($cat) => $cat !== ''
+        );
+
+        return $this->render($response, 'expenses/create.twig', ['categories' => $categories]);
     }
 
     public function store(Request $request, Response $response): Response

@@ -101,4 +101,15 @@ class PdoUserRepository implements UserRepositoryInterface
             $this->updateUser($user->getId(), $user->getUsername(), $user->getPasswordHash());
         }
     }
+
+    public function getExpenses(User $user): array {
+        // This method collects the expenses that a user has stored in the database.
+
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM expenses where user_id = :id order by date desc'
+        );
+
+        $stmt->execute(['id' => $user->getId()]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

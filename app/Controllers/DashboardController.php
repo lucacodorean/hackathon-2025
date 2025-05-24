@@ -29,7 +29,7 @@ class DashboardController extends BaseController
         // TODO: call service to compute category averages per selected year/month
 
         return $this->render($response, 'dashboard.twig', [
-
+            'currentUserId'         => $_SESSION['user_id'],
             'alerts'                => [],
             'totalForMonth'         => [],
             'totalsForCategories'   => [],
