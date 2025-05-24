@@ -7,6 +7,9 @@ namespace App\Domain\Service;
 use App\Domain\Entity\Expense;
 use App\Domain\Entity\User;
 use App\Domain\Repository\ExpenseRepositoryInterface;
+use App\Domain\Repository\UserRepositoryInterface;
+use App\Exception\NotAuthorizedException;
+use App\Exception\ResourceNotFoundException;
 use DateTimeImmutable;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -36,12 +39,15 @@ class ExpenseService
 
         $offset = ($pageNumber - 1) * $pageSize;
 
-        return $this->expenses->findBy([
+        $expenses = $this->expenses->findBy([
             "user_id" => $user->getId(),
             "date >=" => $startDate,
             "date <=" => $endDate,
             ],
             $offset, $pageSize);
+
+        /// Making the method returns an array of Expense[]
+        return array_map(fn(array $r) => Expense::fromRow($r), $expenses);
     }
 
     public function create(
@@ -52,8 +58,15 @@ class ExpenseService
         string $category,
     ): void {
         // TODO: implement this to create a new expense entity, perform validation, and persist
-
         // TODO: here is a code sample to start with
+
+        /// Given the implementation I've followed that means implementing the validation rules for the expense
+        /// the validation happens at controller level. Either way, here we can assure that the data can be mapped
+        /// correctly to the database.
+        /// Technically, the validator validates the input, the only parameter that may create problems is
+        /// the user, because it may be null.
+
+        if(!$user) throw new NotAuthorizedException("User is null.");
         $expense = new Expense(null, $user->getId(), $date, $category, (int)$amount, $description);
         $this->expenses->save($expense);
     }
@@ -66,6 +79,50 @@ class ExpenseService
         string $category,
     ): void {
         // TODO: implement this to update expense entity, perform validation, and persist
+
+        // Given that the save() method implemented in the repository is capable of deciding its purpose.
+        // Having the expense sent as parameter means that the resource may exist, so that means that we may have
+        // an id. Thus, we can just validate that the expense is not null. In that case, the expense is a valid entity.
+
+        /// The rest of the validation is handled in the controller.
+        /// The issue that we may have is with the amount parameter, which is of type float. Normally, the amount
+        /// is an integer value, so that means that we need to make sure that the amount is getting set as an integer.
+        /// A possible fix is to consider only the [.] part of the number, or to convert the entire number (considering)
+        /// the floating part to an integer.
+        ///
+        ///  For simplicity, the implemented solution is just handling the conversion.
+
+        if(!$expense) {
+            throw new ResourceNotFoundException("Expense not found.");
+        }
+
+        $expense->setDate($date);
+        $expense->setCategory($category);
+        $expense->setDescription($description);
+        $expense->setAmountCents(intval($amount));
+
+        $this->expenses->save($expense);
+    }
+
+    public function delete(User $user, $expense_id): void {
+        $expense = $this->expenses->find($expense_id);
+        if(!$expense) {
+            throw new ResourceNotFoundException("Expense not found.");
+        }
+
+        if($user->getId() != $expense->getUserId()) {
+            throw new NotAuthorizedException("Not authorized to delete expense");
+        }
+
+        $this->expenses->delete($expense->getId());
+    }
+
+    public function listExpenditureYears(User $user): array {
+        if(!$user) {
+            throw new NotAuthorizedException("User is null.");
+        }
+
+        return $this->expenses->listExpenditureYears($user);
     }
 
     public function importFromCsv(User $user, UploadedFileInterface $csvFile): int
@@ -74,5 +131,19 @@ class ExpenseService
         // TODO: for extra points wrap the whole import in a transaction and rollback only in case writing to DB fails
 
         return 0; // number of imported rows
+    }
+
+    public function find(int $id): ?Expense {
+        return $this->expenses->find($id);
+    }
+
+    /**
+     * This method's purpose is to evaluate the state of a user given an expense.
+     * @throws NotAuthorizedException
+     */
+    public function edit($userId, $expenseId): void {
+        if($userId !== $expenseId) {
+            throw new NotAuthorizedException("Not authorized to edit expense.");
+        }
     }
 }

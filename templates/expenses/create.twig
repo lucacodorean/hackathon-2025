@@ -3,6 +3,13 @@
 {% block content %}
     <h1 class="text-2xl font-bold mb-4">Add Expense</h1>
     <section class="mb-8">
+        {% if errors %}
+            {% for error in errors %}
+                <div class="alert alert-error mb-4 text-red-500">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        {% endif %}
         <form action="/expenses" method="POST" class="max-w-sm mx-auto">
             <div class="mb-4 flex items-center">
                 <label for="date" class="w-24 text-gray-300 font-bold">Date:</label>
@@ -14,8 +21,13 @@
                 {# TODO: populate with configured expense categories instead of the mock values #}
                 <select id="category" name="category" required
                         class="flex-1 shadow appearance-none border rounded py-2 px-3 bg-gray-700 text-gray-100 leading-tight focus:outline-none focus:shadow-outline">
-                    {% for value, label in categories %}
-                        <option value="{{ value|e }}">{{ label|e }}</option>
+                    {% for label in categories %}
+                        <option
+                                value="{{ label|e }}"
+                                {% if label == defaultCategory %}selected{% endif %}
+                        >
+                            {{ label|e }}
+                        </option>
                     {% endfor %}
                 </select>
             </div>

@@ -6,8 +6,14 @@ namespace App\Controllers;
 
 use App\Domain\Service\AuthService;
 use App\Domain\Service\ExpenseService;
+use App\Exception\ExpenseValidationException;
+use App\Exception\NotAuthorizedException;
+use App\Exception\ResourceNotFoundException;
+use App\Validators\ExpenseValidator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Views\Twig;
 
 class ExpenseController extends BaseController
@@ -17,7 +23,8 @@ class ExpenseController extends BaseController
     public function __construct(
         Twig $view,
         private readonly ExpenseService $expenseService,
-        private readonly AuthService $authService
+        private readonly AuthService $authService,
+        private readonly ExpenseValidator $validator
     ) {
         parent::__construct($view);
     }
@@ -34,27 +41,46 @@ class ExpenseController extends BaseController
         // parse request parameters
         // TODO: obtain logged-in user ID from session
         // Given that I saved the user_id post-login in user's session, it can be easily accessed.
-        $userId = $_SESSION["user_id"];
         $page = (int)($request->getQueryParams()['page'] ?? 1);
         $pageSize = (int)($request->getQueryParams()['pageSize'] ?? self::PAGE_SIZE);
 
         $selectedYear = $request->getQueryParams()['year'] ?? date("Y");
         $selectedMonth = $request->getQueryParams()['month'] ?? date("m");
 
-        $expenses = $this->expenseService->list(
-            $this->authService->retrieveLogged(),
-            intval($selectedYear),
-            intval($selectedMonth),
-            $page,
-            $pageSize
-        );
+        try {
+            $user = $this->authService->retrieveLogged();
 
-        return $this->render($response, 'expenses/index.twig', [
-            'currentUserId'         => $_SESSION['user_id'],
-            'expenses' => $expenses,
-            'page'     => $page,
-            'pageSize' => $pageSize,
-        ]);
+            $expenses = $this->expenseService->list(
+                $user,
+                intval($selectedYear),
+                intval($selectedMonth),
+                $page,
+                $pageSize
+            );
+            $years = $this->expenseService->listExpenditureYears($user);
+
+            return $this->render($response, 'expenses/index.twig', [
+                'currentUserId'         => $_SESSION['user_id'],
+                'expenses'              => $expenses,
+                'expensesCount'         => count($expenses),
+                'selectedMonth'         => $selectedMonth,
+                'selectedYear'          => $selectedYear,
+                "years"                 => $years,
+                'page'     => $page,
+                'pageSize' => $pageSize,
+            ]);
+
+        } catch (NotAuthorizedException) {
+            throw new HttpForbiddenException($request);
+        }
+    }
+
+    private function getCategories() {
+        $categoriesArr = $_ENV['EXPENSE_CATEGORIES'] ?? '';
+        return array_filter(
+            array_map('trim', explode(',', $categoriesArr)),
+            fn($category) => $category !== ''
+        );
     }
 
     public function create(Request $request, Response $response): Response
@@ -64,13 +90,10 @@ class ExpenseController extends BaseController
         // Hints:
         // - obtain the list of available categories from configuration and pass to the view
 
-        /// Usiing the given hint, what I'm trying to do is to retrieve the categories from the env and then
-        /// map each entry separated by "," into an item itself.
-        $csv = $_ENV['EXPENSE_CATEGORIES'] ?? '';
-        $categories = array_filter(
-            array_map('trim', explode(',', $csv)),
-            fn($cat) => $cat !== ''
-        );
+        /// Using the given hint, what I'm trying to do is to retrieve the categories from the env and then
+        /// map each entry separated by "," into an item itself
+
+        $categories = $this->getCategories();
 
         return $this->render($response, 'expenses/create.twig', ['categories' => $categories]);
     }
@@ -85,7 +108,32 @@ class ExpenseController extends BaseController
         // - rerender the "expenses.create" page with included errors in case of failure
         // - redirect to the "expenses.index" page in case of success
 
-        return $response;
+        $data = $request->getParsedBody();
+        $categories = $this->getCategories();
+
+        try {
+            $this->validator->validate($data, $categories);
+            $this->expenseService->create(
+                $this->authService->retrieveLogged(),
+                floatval($data['amount']),
+                $data['description'],
+                new \DateTimeImmutable($data['date']),
+                $data['category'],
+            );
+
+        } catch (ExpenseValidationException $exception) {
+            return $this->render($response, 'expenses/create.twig', [
+                'errors' => $exception->getErrors(),
+                'categories' => $categories,
+                'defaultCategory' => $categories[0],
+            ]);
+        } catch (NotAuthorizedException) {
+            throw new HttpForbiddenException($request);
+        }
+
+        return $response
+            ->withHeader('Location', '/expenses' . $request->getUri()->getQuery())
+            ->withStatus(302);
     }
 
     public function edit(Request $request, Response $response, array $routeParams): Response
@@ -97,9 +145,21 @@ class ExpenseController extends BaseController
         // - load the expense to be edited by its ID (use route params to get it)
         // - check that the logged-in user is the owner of the edited expense, and fail with 403 if not
 
-        $expense = ['id' => 1];
+        try {
 
-        return $this->render($response, 'expenses/edit.twig', ['expense' => $expense, 'categories' => []]);
+            $categories = $this->getCategories();
+            $expenseId = isset($routeParams['id']) ? (int) $routeParams['id'] : -1;
+            $expense = $this->expenseService->find($expenseId);
+
+            $this->expenseService->edit($_SESSION['user_id'], $expense->getUserId());
+            return $this->render($response, 'expenses/edit.twig', [
+                'currentUserId' => $_SESSION['user_id'],
+                'expense'       => $expense,
+                'categories'    => $categories
+            ]);
+        } catch (NotAuthorizedException) {
+            throw new HttpForbiddenException($request);
+        }
     }
 
     public function update(Request $request, Response $response, array $routeParams): Response
@@ -114,7 +174,37 @@ class ExpenseController extends BaseController
         // - rerender the "expenses.edit" page with included errors in case of failure
         // - redirect to the "expenses.index" page in case of success
 
-        return $response;
+        $data = $request->getParsedBody();
+        $categories = $this->getCategories();
+        $expenseId = isset($routeParams['id']) ? (int) $routeParams['id'] : -1;
+        $expense = $this->expenseService->find($expenseId);
+
+        try {
+            $this->validator->validate($data, $categories);
+
+            $this->expenseService->update(
+                $expense,
+                floatval($data['amount']),
+                $data['description'],
+                new \DateTimeImmutable($data['date']),
+                $data['category'],
+            );
+
+        } catch (ResourceNotFoundException) {
+            throw new HttpNotFoundException($request);
+        }
+        catch (ExpenseValidationException $exception) {
+            return $this->render($response, 'expenses/edit.twig', [
+                'errors' => $exception->getErrors(),
+                'currentUserId' => $_SESSION['user_id'],
+                'expense'       => $expense,
+                'categories'    => $categories
+            ]);
+        }
+
+        return $response
+            ->withHeader('Location', '/expenses' . $request->getUri()->getQuery())
+            ->withStatus(302);
     }
 
     public function destroy(Request $request, Response $response, array $routeParams): Response
@@ -126,6 +216,19 @@ class ExpenseController extends BaseController
         // - call the repository method to delete the expense
         // - redirect to the "expenses.index" page
 
-        return $response;
+        try {
+            $expenseId = isset($routeParams['id']) ? (int) $routeParams['id'] : -1;
+            $this->expenseService->delete($this->authService->retrieveLogged(), $expenseId);
+        }
+        catch (NotAuthorizedException) {
+            throw new HttpForbiddenException($request);
+        }
+        catch(ResourceNotFoundException) {
+            throw new HttpNotFoundException($request);
+        }
+
+        return $response
+            ->withHeader('Location', '/expenses' . $request->getUri()->getQuery())
+            ->withStatus(302);
     }
 }

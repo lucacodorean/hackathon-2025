@@ -6,8 +6,9 @@ use App\Exception\RegisterValidationException;
 
 class RegisterValidator
 {
-    // This validator is in charge of evalating the requests received from the registration process.
+    // This validator is in charge of evaluating the requests received from the registration process.
     /**
+     * @param array<string,mixed> $data
      * @throws RegisterValidationException
      */
     public function validate(array $data): void

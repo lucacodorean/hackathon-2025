@@ -73,7 +73,7 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
         // Just like in user's case, the save method is capable of choosing what kind of operation shall do.
 
-        if($expense->getId() !== null) {
+        if($expense->getId() === null) {
             $this->insert(
                 $expense->getUserId(),
                 $expense->getDate()->format('Y-m-d H:i:s'),
@@ -191,8 +191,18 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
     public function listExpenditureYears(User $user): array
     {
-        // TODO: Implement listExpenditureYears() method.
-        return [];
+        $stmt = $this->pdo->prepare("
+            SELECT DISTINCT
+                CAST(strftime('%Y', date) AS INTEGER) AS year
+            FROM expenses
+            WHERE user_id = :user_id
+            ORDER BY year DESC
+        ");
+
+        $stmt->bindValue(":user_id", $user->getId(), PDO::PARAM_INT);
+        $stmt->execute();
+
+        return array_column($stmt->fetchAll(PDO::FETCH_ASSOC), "year");
     }
 
     public function sumAmountsByCategory(array $criteria): array
