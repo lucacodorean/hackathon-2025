@@ -104,10 +104,36 @@ A solution with passing analysis and unit tests will receive extra points.
 ## Delivery details
 
 Participant:
-- Full name: ...
-- Email address: ...
+- Full name: Luca-Andrei Codorean
+- Email address: codoreanluca@gmail.com
 
 Features fully implemented:
-- ...
+
+- Authentication with both Login and Register protected by CSRF.
+- The register process also includes the password confirmation field.
+- Authentication forms were adjusted to accommodate the final version of the authentication process.
+- Log out.
+- --
+- Expenses with their entire requirements as follows:
+- Expenses list, including custom pagination and a user-friendly option to navigate through the pages.
+- Expenses-creation process as requested in the business requirements document.
+- Expenses-edit process as requested in the business requirements document.
+- Expenses-deletion process with the flash message placed. To be noted that no external package has been used so the actual version may be improved.
+- Expenses mass import using the csv files accompanied by the flash messages.
+- --
+- Dashboard requirements including alerts, and the monthly expenses summary.
+- Categories information is stored in the .env. An example of the implementation is presented in .env.example.
+- --
+- Extra requirements that were implemented are:
+  - Prepared statements, checks for the user not being able to operate over another user's expenses.
+  - Composer analyze frequent fixes.
+  - Migration system that enables the maintainers to keep track of the migrations that were run in the past.
+  - Pagination that respects the 1...N format alongside the next and previous buttons.
+  - CSV mass import failures protected by a transaction.
+- -- 
+- Extra requirements after a fully working application:
+  - Unit tests for the CRUD operations made over the Expense Entity.
+  - Soft deletion over the Expense Entity
+  - amountCents column update from strings to real numbers. To be noted that the solution doesn't keep the previous amount_cents column, but the migration transfers the data to the new column as expected. More information can be found in ``migration2.sql``.
 
 Other instructions about setting up the application (if any): ...
