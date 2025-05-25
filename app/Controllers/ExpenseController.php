@@ -164,7 +164,7 @@ class ExpenseController extends BaseController
             $expenseId = isset($routeParams['id']) ? (int) $routeParams['id'] : -1;
             $expense = $this->expenseService->find($expenseId);
 
-            $this->expenseService->edit($_SESSION['user_id'], $expense->getUserId());
+            $this->expenseService->edit($_SESSION['user_id'], $expense->getId());
             return $this->render($response, 'expenses/edit.twig', [
                 'currentUserId' => $_SESSION['user_id'],
                 'expense'       => $expense,
@@ -172,6 +172,8 @@ class ExpenseController extends BaseController
             ]);
         } catch (NotAuthorizedException) {
             throw new HttpForbiddenException($request);
+        } catch (ResourceNotFoundException) {
+            throw new HttpNotFoundException($request);
         }
     }
 

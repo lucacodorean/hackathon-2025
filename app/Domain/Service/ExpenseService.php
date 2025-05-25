@@ -195,13 +195,18 @@ class ExpenseService
     public function find(int $id): ?Expense {
         return $this->expenses->find($id);
     }
-
     /**
      * This method's purpose is to evaluate the state of a user given an expense.
-     * @throws NotAuthorizedException
+     * @throws NotAuthorizedException|ResourceNotFoundException
      */
     public function edit($userId, $expenseId): void {
-        if($userId !== $expenseId) {
+        $expense = $this->expenses->find($expenseId);
+
+        if (!$expense) {
+            throw new ResourceNotFoundException("Expense not found.");
+        }
+
+        if($userId !== $expense->getUserId()) {
             throw new NotAuthorizedException("Not authorized to edit expense.");
         }
     }
