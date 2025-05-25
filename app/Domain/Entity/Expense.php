@@ -25,7 +25,7 @@ final class Expense
     public function getCategory(): string { return $this->category; }
     public function getAmountCents(): float { return $this->amountCents; }
     public function getDescription(): string { return $this->description; }
-    public function isDeleted(): bool { return $this->isDeleted; }
+    public function isDeleted(): int { return $this->isDeleted; }
     public function getDeletedAt(): ?DateTimeImmutable { return $this->deletedAt; }
 
     public function setDate(DateTimeImmutable $date): void {
