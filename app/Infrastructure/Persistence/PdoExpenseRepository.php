@@ -28,7 +28,7 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
      */
     public function find(int $id): ?Expense
     {
-        $query = 'SELECT * FROM expenses WHERE id = :id';
+        $query = 'SELECT * FROM expenses WHERE id = :id and is_deleted = 0';
         $statement = $this->pdo->prepare($query);
         $statement->execute(['id' => $id]);
         $data = $statement->fetch();
@@ -103,8 +103,10 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
     public function delete(int $id): void
     {
-        $statement = $this->pdo->prepare('DELETE FROM expenses WHERE id=?');
-        $statement->execute([$id]);
+        $statement = $this->pdo->prepare('UPDATE expenses set is_deleted = 1, deleted_at = :deleted_at where id = :id');
+        $statement->bindValue(':deleted_at', date('Y-m-d H:i:s'));
+        $statement->bindValue(':id', $id);
+        $statement->execute();
     }
 
     /**
@@ -118,6 +120,7 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $index  = 0;
         $conds  = [];
         $params = [];
+        $criteria["is_deleted"] = 0;
 
         foreach ($criteria as $colOp => $val) {
 
@@ -290,6 +293,8 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
             $data['category'],
             $data['amount_cents'],
             $data['description'],
+            $data['is_deleted'],
+            $data['deleted_at'] ? new DateTimeImmutable($data['deleted_at']) : null
         );
     }
 

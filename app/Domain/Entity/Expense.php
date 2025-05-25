@@ -9,12 +9,14 @@ use DateTimeImmutable;
 final class Expense
 {
     public function __construct(
-        private ?int $id,
-        private int $userId,
-        private DateTimeImmutable $date,
-        private string $category,
-        private float $amountCents,
-        private string $description,
+        private ?int               $id,
+        private int                $userId,
+        private DateTimeImmutable  $date,
+        private string             $category,
+        private float              $amountCents,
+        private string             $description,
+        private int                $isDeleted=0,
+        private ?DateTimeImmutable $deletedAt=null,
     ) {}
 
     public function getId(): ?int { return $this->id; }
@@ -23,6 +25,8 @@ final class Expense
     public function getCategory(): string { return $this->category; }
     public function getAmountCents(): float { return $this->amountCents; }
     public function getDescription(): string { return $this->description; }
+    public function isDeleted(): bool { return $this->isDeleted; }
+    public function getDeletedAt(): ?DateTimeImmutable { return $this->deletedAt; }
 
     public function setDate(DateTimeImmutable $date): void {
         $this->date = $date;

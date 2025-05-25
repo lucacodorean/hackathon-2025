@@ -7,7 +7,7 @@
 //To keep things organized, I wanted to give specific context on the migration such as a brief description.
 //
 $dir   = __DIR__ . '/../database';
-$files = glob("$dir/migration_*.sql");
+$files = glob("$dir/migration_*");
 
 $indexes = array_map(function($f){
     if (preg_match('/migration_(\d{4})\.sql$/', $f, $m)) {

@@ -230,10 +230,10 @@ class ExpenseController extends BaseController
         // - redirect to the "expenses.index" page
 
         $expenseId = isset($routeParams['id']) ? (int) $routeParams['id'] : -1;
-        $deleted = $this->expenseService->delete($this->authService->retrieveLogged(), $expenseId);
+        $this->expenseService->delete($this->authService->retrieveLogged(), $expenseId);
 
         return $response
-            ->withHeader('Location', '/expenses' . $request->getUri()->getQuery())
+            ->withHeader('Location',  $request->getHeaderLine('Referer') ?: '/expenses' . $request->getUri()->getQuery())
             ->withStatus(302);
     }
 
