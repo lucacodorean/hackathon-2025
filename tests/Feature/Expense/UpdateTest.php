@@ -31,7 +31,7 @@ class UpdateTest extends TestCase
 
         $service = new ExpenseService($repo);
 
-        $user    = new User(1, 'test', 'hash', new DateTimeImmutable());
+        $user    = new User(1, 'test', password_hash("parola123", PASSWORD_DEFAULT), new DateTimeImmutable());
         $date    = new DateTimeImmutable('2025-01-02');
         $service->create($user, 200.00, 'Meat and dairy', $date, 'groceries');
 
@@ -55,8 +55,8 @@ class UpdateTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $owner     = new User(1, 'owner', 'hash', new DateTimeImmutable());
-        $otherUser = new User(2, 'other', 'hash', new DateTimeImmutable());
+        $owner     = new User(1, 'test1', password_hash("parola123", PASSWORD_DEFAULT), new DateTimeImmutable());
+        $otherUser = new User(2, 'test2', password_hash("parola123", PASSWORD_DEFAULT), new DateTimeImmutable());
 
         $date    = new DateTimeImmutable('2025-01-02');
         $expense = new Expense(1, $owner->getId(), $date, 'Other', 270.0, 'CTP Ticket for no buss pass');

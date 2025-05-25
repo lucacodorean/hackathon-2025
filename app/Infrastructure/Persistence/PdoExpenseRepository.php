@@ -360,9 +360,8 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
                 }
 
                 $date        = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $date);
-                $amountCents = (int) round((float)$amount * 100);
 
-                $this->insert($user->getId(), $date->format('Y-m-d H:i:s'), $category, $amountCents, $description);
+                $this->insert($user->getId(), $date->format('Y-m-d H:i:s'), $category, $amount, $description);
                 $visited[$key] = true;
                 $imported++;
 

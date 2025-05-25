@@ -30,11 +30,11 @@ class CreateTest extends TestCase
                 $savedExpense = $e;
             });
 
-        $user    = new User(1, "test", "hash", new DateTimeImmutable());
+        $user    = new User(1, 'test', password_hash("parola123", PASSWORD_DEFAULT), new DateTimeImmutable());
         $service = new ExpenseService($repo);
         $date    = new DateTimeImmutable("2025-01-02");
 
-        $service->create($user, 12.3, "Weekly food", $date, "Groceries");
+        $service->create($user, 12.3, "Shopping at Vivo Cluj-Napoca", $date, "Groceries");
 
         $this->assertNotNull($savedExpense);
         $this->assertSame($date,            $savedExpense->getDate());

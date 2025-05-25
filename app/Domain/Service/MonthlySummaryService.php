@@ -17,7 +17,7 @@ class MonthlySummaryService
 
     /// All methods follow the same criteria, thus writing the same criteria generation code three wouldn't respect
     /// the reusability principles.
-    private function computeParameters(User $user, int $year, int $month): array {
+    public function computeParameters(User $user, int $year, int $month): array {
         $startDate = (new \DateTimeImmutable())
             ->setDate($year, $month, 1)
             ->setTime(0,0,0)
@@ -42,7 +42,7 @@ class MonthlySummaryService
     }
 
     // This function's purpose is to map the data array to the format required by the frontend.
-    private function formatData(array $data, float $total, string $operation): array {
+    public function formatData(array $data, float $total, string $operation): array {
         $out = [];
         foreach ($data as $row) {
             $formattedValue = $row[$operation . '(amount_cents)'] ;

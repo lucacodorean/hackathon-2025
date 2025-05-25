@@ -6,7 +6,6 @@ use App\Domain\Entity\Expense;
 use App\Domain\Entity\User;
 use App\Domain\Repository\ExpenseRepositoryInterface;
 use App\Domain\Service\ExpenseService;
-use App\Exception\NotAuthorizedException;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +17,7 @@ class DeleteTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $user    = new User(1, 'test', 'hash', new DateTimeImmutable());
+        $user    = new User(1, 'test', password_hash("parola123", PASSWORD_DEFAULT), new DateTimeImmutable());
         $date    = new DateTimeImmutable('2025-01-02');
         $expense = new Expense(1, $user->getId(), $date, "groceries", 200.0, "Klausen Hamburger");
 
@@ -43,8 +42,8 @@ class DeleteTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $owner     = new User(1, 'owner', 'hash', new DateTimeImmutable());
-        $otherUser = new User(2, 'other', 'hash', new DateTimeImmutable());
+        $owner     = new User(1, 'test1', password_hash("parola123", PASSWORD_DEFAULT), new DateTimeImmutable());
+        $otherUser = new User(2, 'test2', password_hash("parola123", PASSWORD_DEFAULT), new DateTimeImmutable());
 
         $date    = new DateTimeImmutable('2025-01-02');
         $expense = new Expense(1, $owner->getId(), $date, 'Groceries', 7.0, '5 To Go Cappuccino');
