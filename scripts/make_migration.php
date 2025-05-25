@@ -28,10 +28,8 @@ $template = <<<SQL
 -- Migration handler: $descr
 BEGIN TRANSACTION;
 
--- TODO: scrie aici SQL-ul de migrație
-
 COMMIT;
 SQL;
 
 file_put_contents($path, $template);
-echo "Fișier creat: migrations/$name\n";
+echo "File created: migrations/$name\n";
