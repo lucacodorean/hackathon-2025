@@ -45,11 +45,11 @@ class MonthlySummaryService
     private function formatData(array $data, float $total, string $operation): array {
         $out = [];
         foreach ($data as $row) {
-            $formattedValue = $row[$operation . '(amount_cents)'] / 100 ;
+            $formattedValue = $row[$operation . '(amount_cents)'] ;
             $cat    = $row['category'];
-            $value  = $formattedValue;
+            $value  = round($formattedValue, 2);
             $percent = $total > 0
-                ? round(($formattedValue / $total) * 100, 2)
+                ? round(($formattedValue / $total), 2)
                 : 0.0
             ;
 

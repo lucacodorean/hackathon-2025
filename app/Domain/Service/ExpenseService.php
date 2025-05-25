@@ -96,7 +96,7 @@ class ExpenseService
             throw new NotAuthorizedException("User is null.");
         }
 
-        $expense = new Expense(null, $user->getId(), $date, $category, (int)$amount, $description);
+        $expense = new Expense(null, $user->getId(), $date, $category, $amount, $description);
         $this->expenses->save($expense);
     }
 
@@ -128,7 +128,7 @@ class ExpenseService
         $expense->setDate($date);
         $expense->setCategory($category);
         $expense->setDescription($description);
-        $expense->setAmountCents(intval($amount));
+        $expense->setAmountCents($amount);
 
         $this->expenses->save($expense);
     }

@@ -13,7 +13,7 @@ final class Expense
         private int $userId,
         private DateTimeImmutable $date,
         private string $category,
-        private int $amountCents,
+        private float $amountCents,
         private string $description,
     ) {}
 
@@ -21,20 +21,16 @@ final class Expense
     public function getUserId(): int { return $this->userId; }
     public function getDate(): DateTimeImmutable { return $this->date; }
     public function getCategory(): string { return $this->category; }
-    public function getAmountCents(): int { return $this->amountCents; }
+    public function getAmountCents(): float { return $this->amountCents; }
     public function getDescription(): string { return $this->description; }
 
-    public function setUserId(int $id): void {
-        $this->userId = $id;
-    }
     public function setDate(DateTimeImmutable $date): void {
         $this->date = $date;
     }
     public function setCategory(string $category): void {
         $this->category = $category;
     }
-    public function setAmountCents(int $cents): void
-    {
+    public function setAmountCents(float $cents): void {
         $this->amountCents = $cents;
     }
 

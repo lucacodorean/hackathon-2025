@@ -8,7 +8,6 @@ use App\Domain\Entity\Expense;
 use App\Domain\Entity\User;
 use App\Domain\Repository\ExpenseRepositoryInterface;
 use App\Domain\Service\CategoryBudgetService;
-use App\Exception\NotAuthorizedException;
 use App\Exception\UploadedFileInterfaceException;
 use DateTimeImmutable;
 use Exception;
@@ -50,7 +49,7 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $stmt->bindValue(":category",       $category);
         $stmt->bindValue(":description",    $description);
         $stmt->bindValue(":user_id",        $user_id,       PDO::PARAM_INT);
-        $stmt->bindValue(":amount_cents",   $amount_cents,  PDO::PARAM_INT);
+        $stmt->bindValue(":amount_cents",   $amount_cents);
         $stmt->execute();
     }
 
@@ -70,7 +69,7 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $stmt->bindValue(":category",       $category);
         $stmt->bindValue(":description",    $description);
         $stmt->bindValue(":user_id",        $user_id,       PDO::PARAM_INT);
-        $stmt->bindValue(":amount_cents",   $amount_cents,  PDO::PARAM_INT);
+        $stmt->bindValue(":amount_cents",   $amount_cents);
         $stmt->execute();
     }
 
@@ -276,7 +275,7 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         }
         $stmt->execute();
 
-        return (int) $stmt->fetchColumn();
+        return (float) $stmt->fetchColumn();
     }
 
     /**
