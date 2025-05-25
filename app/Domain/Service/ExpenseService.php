@@ -10,8 +10,10 @@ use App\Domain\Repository\ExpenseRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 use App\Exception\NotAuthorizedException;
 use App\Exception\ResourceNotFoundException;
+use App\Exception\UploadedFileInterfaceException;
 use DateTimeImmutable;
 use Psr\Http\Message\UploadedFileInterface;
+use Slim\Exception\HttpBadRequestException;
 
 class ExpenseService
 {
@@ -23,9 +25,13 @@ class ExpenseService
     {
         // TODO: implement this and call from controller to obtain paginated list of expenses
 
-        /// Computing the start date based on the year and month. Then, in order to get rid of the
+        /// Computing the start date based on the year and month. Then, to get rid of the
         /// issued caused by the 30/31 day months for endDate is used the modify method.
-        /// Applying filters based on user's id and the given dates.
+        /// Applying filters based on the user's id and the given dates.
+
+        if(!$user) {
+            throw new NotAuthorizedException("User is null.");
+        }
 
         $startDate = (new \DateTimeImmutable())
             ->setDate($year, $month, 1)
@@ -58,13 +64,16 @@ class ExpenseService
         // TODO: implement this to create a new expense entity, perform validation, and persist
         // TODO: here is a code sample to start with
 
-        /// Given the implementation I've followed that means implementing the validation rules for the expense
-        /// the validation happens at controller level. Either way, here we can assure that the data can be mapped
+        /// Given the implementation I've followed, that means implementing the validation rules for the expense
+        /// the validation happens at controller level. Either way, here we can ensure that the data can be mapped
         /// correctly to the database.
         /// Technically, the validator validates the input, the only parameter that may create problems is
         /// the user, because it may be null.
 
-        if(!$user) throw new NotAuthorizedException("User is null.");
+        if(!$user) {
+            throw new NotAuthorizedException("User is null.");
+        }
+
         $expense = new Expense(null, $user->getId(), $date, $category, (int)$amount, $description);
         $this->expenses->save($expense);
     }
@@ -79,13 +88,13 @@ class ExpenseService
         // TODO: implement this to update expense entity, perform validation, and persist
 
         // Given that the save() method implemented in the repository is capable of deciding its purpose.
-        // Having the expense sent as parameter means that the resource may exist, so that means that we may have
+        // Having the expense sent as a parameter means that the resource may exist, so that means that we may have
         // an id. Thus, we can just validate that the expense is not null. In that case, the expense is a valid entity.
 
         /// The rest of the validation is handled in the controller.
         /// The issue that we may have is with the amount parameter, which is of type float. Normally, the amount
         /// is an integer value, so that means that we need to make sure that the amount is getting set as an integer.
-        /// A possible fix is to consider only the [.] part of the number, or to convert the entire number (considering)
+        /// A possible fix is to consider only the [.] Part of the number, or to convert the entire number (considering)
         /// the floating part to an integer.
         ///
         ///  For simplicity, the implemented solution is just handling the conversion.
@@ -123,12 +132,21 @@ class ExpenseService
         return $this->expenses->listExpenditureYears($user);
     }
 
+
     public function importFromCsv(User $user, UploadedFileInterface $csvFile): int
     {
         // TODO: process rows in file stream, create and persist entities
         // TODO: for extra points wrap the whole import in a transaction and rollback only in case writing to DB fails
 
-        return 0; // number of imported rows
+        // Transactions are easily to be established. For that, all that's needed is to use pdo's beginTransaction()
+        // method. In order to keep only unique elements, a set is needed. In the most
+        // simplistic way, sets may be implemented as a list that has a visited array attached. Another implementation
+        // is to validate the existence of each entry in the array. Both implementations require liniar time.
+        // Even so, there is no need of keeping both the entries and the visited list, because we can process them as they
+        // come. Thus, the visited list is just enough.
+        // This method should call the infrastructure layer that interacts with the database.
+
+        return $this->expenses->importCsv($user, $csvFile);
     }
 
     public function find(int $id): ?Expense {

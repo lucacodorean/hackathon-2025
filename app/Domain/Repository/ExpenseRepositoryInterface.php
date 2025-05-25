@@ -6,6 +6,7 @@ namespace App\Domain\Repository;
 
 use App\Domain\Entity\Expense;
 use App\Domain\Entity\User;
+use Psr\Http\Message\UploadedFileInterface;
 
 interface ExpenseRepositoryInterface
 {
@@ -29,4 +30,6 @@ interface ExpenseRepositoryInterface
     public function averageAmountsByCategory(array $criteria): array;
 
     public function sumAmounts(array $criteria): float;
+
+    public function importCsv(User $user, UploadedFileInterface $file): int;
 }

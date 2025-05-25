@@ -15,4 +15,8 @@ class CategoryBudgetService
     public function getBudgets(): array {
         return $this->categoryBudgets;
     }
+
+    public function getCategoryBudget(string $category): ?float {
+        return $this->categoryBudgets[$category] ?? null;
+    }
 }

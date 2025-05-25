@@ -7,14 +7,21 @@ namespace App\Infrastructure\Persistence;
 use App\Domain\Entity\Expense;
 use App\Domain\Entity\User;
 use App\Domain\Repository\ExpenseRepositoryInterface;
+use App\Domain\Service\CategoryBudgetService;
+use App\Exception\NotAuthorizedException;
+use App\Exception\UploadedFileInterfaceException;
 use DateTimeImmutable;
 use Exception;
 use PDO;
+use Psr\Http\Message\UploadedFileInterface;
+use Psr\Log\LoggerInterface;
 
 class PdoExpenseRepository implements ExpenseRepositoryInterface
 {
     public function __construct(
         private readonly PDO $pdo,
+        private readonly LoggerInterface $logger,
+        private readonly CategoryBudgetService $budgetService
     ) {}
 
     /**
@@ -185,8 +192,8 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         }
 
         $stmt = $this->pdo->prepare($statement);
-        foreach ($params as $p => $v) {
-            $stmt->bindValue($p, $v);
+        foreach ($params as $parameter => $value) {
+            $stmt->bindValue($parameter, $value);
         }
         $stmt->execute();
 
@@ -223,8 +230,8 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $statement .= ' GROUP BY category';
 
         $stmt = $this->pdo->prepare($statement);
-        foreach ($params as $p => $v) {
-            $stmt->bindValue($p, $v);
+        foreach ($params as $parameter => $value) {
+            $stmt->bindValue($parameter, $value);
         }
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -285,5 +292,85 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
             $data['amount_cents'],
             $data['description'],
         );
+    }
+
+    private function validateEntry(array $visited, string $key, int $currentRow, string $category, string $description): bool  {
+        /// This if statement invalidates the entries that were already visited.
+        if(isset($visited[$key])) {
+            $this->logger->warning("Entry at row {currentRow} has been already inserted.", ["currentRow" => $currentRow]);
+            return false;
+        }
+
+        if($description === "") {
+            $this->logger->warning("Entry at row {currentRow} has been already inserted.", ["currentRow" => $currentRow]);
+        }
+
+        /// This if statement will validate if the category is valid, according to the .env categories.
+        if($this->budgetService->getCategoryBudget($category) === null) {
+            $this->logger->warning("Entry at row {currentRow} has an invalid category.", ["currentRow" => $currentRow]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * This method will handle the logic that encapsulates the insertion of csv's entries in the database.
+     * @throws UploadedFileInterfaceException
+     */
+    public function importCsv(User $user, UploadedFileInterface $file): int {
+        // To support the code reusability, the insert() private method can be used in this case to put the
+        // correct data in the database.
+
+        $imported = 0;
+        $currentRow = 0;
+        $visited = [];
+
+        $resource = $file->getStream()->detach();
+        if (!is_resource($resource)) {
+            $this->logger->error('Error at reading uploaded file.');
+            throw new UploadedFileInterfaceException('Error at reading uploaded file.');
+        }
+
+        rewind($resource);
+
+        $this->pdo->beginTransaction();
+        try {
+            while(($currentEntry = fgetcsv($resource)) !== false) {
+                $currentRow++;
+                /// This if statement will just filter the csv entries that aren't complete.
+                if(count($currentEntry) < 4) {
+                    $this->logger->warning("Entry at row {currentRow} is not complete.", ["currentRow" => $currentRow]);
+                    continue;
+                }
+
+                /// This will mass-assign the $currentEntry to the following variables.
+                /// To simulate the set, a key will be created based on all variables.
+                /// In this way, keeping the key as a string instead of a full object will take less space.
+                $key = implode("-", $currentEntry);
+
+                [$date, $amount, $description, $category] = $currentEntry;
+
+                if(!$this->validateEntry($visited, $key, $currentRow, $category, $description)) {
+                    continue;
+                }
+
+                $date        = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $date);
+                $amountCents = (int) round((float)$amount * 100);
+
+                $this->insert($user->getId(), $date->format('Y-m-d H:i:s'), $category, $amountCents, $description);
+                $visited[$key] = true;
+                $imported++;
+
+                $this->logger->info("Entry at row {currentRow} has been imported.", ["currentRow" => $currentRow]);
+            }
+            $this->pdo->commit();
+        } catch (\Throwable $exception) {
+            $this->pdo->rollBack();
+            $this->logger->error('Error at importing csv file.', ['exception' => $exception->getMessage()]);
+            throw new UploadedFileInterfaceException("There has been an error at importing the csv file.");
+        }
+
+        return $imported;
     }
 }

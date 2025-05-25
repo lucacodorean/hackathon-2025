@@ -95,8 +95,8 @@ class ExpenseController extends BaseController
         $categories = $this->getCategories();
 
         return $this->render($response, 'expenses/create.twig', [
-            'currentUserId'         => $_SESSION['user_id'],
-            'categories' => $categories
+            'currentUserId' => $_SESSION['user_id'],
+            'categories'    => $categories
         ]);
     }
 
@@ -231,6 +231,16 @@ class ExpenseController extends BaseController
 
         return $response
             ->withHeader('Location', '/expenses' . $request->getUri()->getQuery())
+            ->withStatus(302);
+    }
+
+    public function importCsv(Request $request, Response $response): Response {
+        $user = $this->authService->retrieveLogged();
+
+        $this->expenseService->importFromCsv($user, $request->getUploadedFiles()['csv']);
+
+        return $response
+            ->withHeader('Location', '/expenses')
             ->withStatus(302);
     }
 }
