@@ -1,6 +1,6 @@
 <?php
 // This script ends the migration functionality.
-// The purpose of this script is to check the migrations that were not ran already, then run the
+// The purpose of this script is to check the migrations not run already, then run the migrations.
 
 $dbFile = __DIR__ . '/../database/database.sqlite';
 $pdo = new PDO("sqlite:$dbFile", null, null, [
@@ -17,7 +17,7 @@ $pdo->exec("
 ");
 
 
-$files = glob(__DIR__ . '/../migrations/migration_*.sql');
+$files = glob(__DIR__ . '/../database/migration_*.sql');
 sort($files);
 
 
