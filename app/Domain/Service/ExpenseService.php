@@ -54,6 +54,28 @@ class ExpenseService
         );
     }
 
+    public function countBy(User $user, int $year, int $month): int {
+
+        if(!$user) {
+            throw new NotAuthorizedException("User is null.");
+        }
+
+        $startDate = (new \DateTimeImmutable())
+            ->setDate($year, $month, 1)
+            ->setTime(0,0,0)
+            ->format('Y-m-d H:i:s');
+
+        $endDate = (new \DateTimeImmutable($startDate))
+            ->modify('first day of next month')
+            ->format('Y-m-d H:i:s');
+
+        return $this->expenses->countBy([
+            "user_id" => $user->getId(),
+            "date >=" => $startDate,
+            "date <=" => $endDate,
+        ]);
+    }
+
     public function create(
         User $user,
         float $amount,

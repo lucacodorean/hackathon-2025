@@ -44,6 +44,9 @@ class ExpenseController extends BaseController
         $page = (int)($request->getQueryParams()['page'] ?? 1);
         $pageSize = (int)($request->getQueryParams()['pageSize'] ?? self::PAGE_SIZE);
 
+        $page = $page < 0 ? 1 : $page;
+
+
         $selectedYear = $request->getQueryParams()['year'] ?? date("Y");
         $selectedMonth = $request->getQueryParams()['month'] ?? date("m");
 
@@ -58,15 +61,22 @@ class ExpenseController extends BaseController
                 $pageSize
             );
 
+            $expensesCount = $this->expenseService->countBy($user, intval($selectedYear), intval($selectedMonth));
+            $lastPage =  (int)($expensesCount / $pageSize) + ($expensesCount%$pageSize ? 1 : 0);
+            $page = min($page, $lastPage);
+
             return $this->render($response, 'expenses/index.twig', [
                 'currentUserId'         => $_SESSION['user_id'],
                 'expenses'              => $expenses,
-                'expensesCount'         => count($expenses),
+                'expensesCount'         => $expensesCount,
                 'selectedMonth'         => $selectedMonth,
                 'selectedYear'          => $selectedYear,
                 "years"                 => $this->expenseService->listExpenditureYears($user),
-                'page'     => $page,
-                'pageSize' => $pageSize,
+                'page'                  => $page,
+                'lastPage'              => $lastPage,
+                'from'                  => ($page - 1) * $pageSize + 1,
+                'to'                    => min($page * $pageSize, $expensesCount),
+                'pageSize'              => $pageSize,
             ]);
 
         } catch (NotAuthorizedException) {
