@@ -6,7 +6,6 @@
     {% set total = to - from + 1 %}
     <h1 class="text-2xl font-bold mb-4">Expenses</h1>
 
-    {# TODO: Configure the necessary href attribute #}
     <a href="/expenses/create"
        class="inline-block mb-6 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
         Add Expense
@@ -31,7 +30,6 @@
         <form action="/expenses" method="GET" class="mb-6 flex gap-4">
             <div>
                 <label for="year" class="block text-gray-300 text-sm font-bold mb-2">Year</label>
-                {# TODO: remove mock data below, pass actual years with expenses from the controller #}
                 <select name="year" id="year"
                         class="shadow border rounded py-2 px-3 text-gray-400 leading-tight focus:outline-none focus:shadow-outline">
                     {% for y in years %}
@@ -86,10 +84,8 @@
                     <td class="py-2 px-4">{{ expense.date|date('m/d/Y') }}</td>
                     <td class="py-2 px-4">{{ expense.category }}</td>
                     <td class="py-2 px-4">
-                        {# TODO: Configure the necessary href attribute #}
                         <a href="/expenses/{{ expense.id }}/edit"
                            class="text-blue-500 hover:text-blue-400 mr-2">Edit</a>
-                        {# TODO: Configure the necessary form action #}
                         <form action="/expenses/{{ expense.id }}/delete" method="POST" class="inline">
                             <button type="submit"
                                     class="text-red-500 hover:text-red-400">Delete

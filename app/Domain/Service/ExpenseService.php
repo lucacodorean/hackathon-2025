@@ -23,7 +23,6 @@ class ExpenseService
 
     public function list(User $user, int $year, int $month, int $pageNumber, int $pageSize): array
     {
-        // TODO: implement this and call from controller to obtain paginated list of expenses
 
         /// Computing the start date based on the year and month. Then, to get rid of the
         /// issued caused by the 30/31 day months for endDate is used the modify method.
@@ -83,8 +82,6 @@ class ExpenseService
         DateTimeImmutable $date,
         string $category,
     ): void {
-        // TODO: implement this to create a new expense entity, perform validation, and persist
-        // TODO: here is a code sample to start with
 
         /// Given the implementation I've followed, that means implementing the validation rules for the expense
         /// the validation happens at controller level. Either way, here we can ensure that the data can be mapped
@@ -107,7 +104,6 @@ class ExpenseService
         DateTimeImmutable $date,
         string $category,
     ): void {
-        // TODO: implement this to update expense entity, perform validation, and persist
 
         // Given that the save() method implemented in the repository is capable of deciding its purpose.
         // Having the expense sent as a parameter means that the resource may exist, so that means that we may have
@@ -168,9 +164,6 @@ class ExpenseService
 
     public function importFromCsv(User $user, UploadedFileInterface $csvFile): int
     {
-        // TODO: process rows in file stream, create and persist entities
-        // TODO: for extra points wrap the whole import in a transaction and rollback only in case writing to DB fails
-
         // Transactions are easily to be established. For that, all that's needed is to use pdo's beginTransaction()
         // method. In order to keep only unique elements, a set is needed. In the most
         // simplistic way, sets may be implemented as a list that has a visited array attached. Another implementation

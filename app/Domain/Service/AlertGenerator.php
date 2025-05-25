@@ -8,7 +8,7 @@ use App\Domain\Entity\User;
 
 class AlertGenerator
 {
-    // TODO: refactor the array below and make categories and their budgets configurable in .env
+
     // Hint: store them as JSON encoded in .env variable, inject them manually in a dedicated service,
     // then inject and use use that service wherever you need category/budgets information.
 
@@ -20,8 +20,7 @@ class AlertGenerator
 
     // Normally the $budgets and $totalForMonth arrays would share the same keys, given that they are both
     // formatted to work with months as keys.
-    public function generate(User $user, int $year, int $month): array
-    {
+    public function generate(User $user, int $year, int $month): array {
         $alerts = [];
         $budgets = $this->budgetService->getBudgets();
         $totalForMonth = $this->summaryService->computePerCategoryTotals($user, $year, $month);

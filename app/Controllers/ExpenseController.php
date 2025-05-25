@@ -31,7 +31,6 @@ class ExpenseController extends BaseController
 
     public function index(Request $request, Response $response): Response
     {
-        // TODO: implement this action method to display the expenses page
 
         // Hints:
         // - use the session to get the current user ID
@@ -39,7 +38,6 @@ class ExpenseController extends BaseController
         // - use the expense service to fetch expenses for the current user
 
         // parse request parameters
-        // TODO: obtain logged-in user ID from session
         // Given that I saved the user_id post-login in user's session, it can be easily accessed.
         $page = (int)($request->getQueryParams()['page'] ?? 1);
         $pageSize = (int)($request->getQueryParams()['pageSize'] ?? self::PAGE_SIZE);
@@ -95,7 +93,6 @@ class ExpenseController extends BaseController
 
     public function create(Request $request, Response $response): Response
     {
-        // TODO: implement this action method to display the create expense page
 
         // Hints:
         // - obtain the list of available categories from configuration and pass to the view
@@ -113,7 +110,6 @@ class ExpenseController extends BaseController
 
     public function store(Request $request, Response $response): Response
     {
-        // TODO: implement this action method to create a new expense
 
         // Hints:
         // - use the session to get the current user ID
@@ -151,7 +147,6 @@ class ExpenseController extends BaseController
 
     public function edit(Request $request, Response $response, array $routeParams): Response
     {
-        // TODO: implement this action method to display the edit expense page
 
         // Hints:
         // - obtain the list of available categories from configuration and pass to the view
@@ -179,7 +174,6 @@ class ExpenseController extends BaseController
 
     public function update(Request $request, Response $response, array $routeParams): Response
     {
-        // TODO: implement this action method to update an existing expense
 
         // Hints:
         // - load the expense to be edited by its ID (use route params to get it)
@@ -224,7 +218,6 @@ class ExpenseController extends BaseController
 
     public function destroy(Request $request, Response $response, array $routeParams): Response
     {
-        // TODO: implement this action method to delete an existing expense
 
         // - load the expense to be edited by its ID (use route params to get it)
         // - check that the logged-in user is the owner of the edited expense, and fail with 403 if not

@@ -25,9 +25,8 @@ class AuthController extends BaseController
         parent::__construct($view);
     }
 
-    public function showRegister(Request $request, Response $response): Response
-    {
-        // TODO: you also have a logger service that you can inject and use anywhere; file is var/app.log
+    public function showRegister(Request $request, Response $response): Response {
+
         $this->logger->info('Register page requested');
 
         /// The next two lines generate a csrf token of length 32 that will be saved in the session.
@@ -43,10 +42,7 @@ class AuthController extends BaseController
         ]);
     }
 
-    public function register(Request $request, Response $response): Response
-    {
-        // TODO: call corresponding service to perform user registration
-
+    public function register(Request $request, Response $response): Response {
         /// To eliminate extra functionalities of the controller, I created a validator that evaluates
         /// the request. Based on the response collected in $errors, the controller will be capable of taking the best
         /// action.
@@ -73,8 +69,7 @@ class AuthController extends BaseController
         ]);
     }
 
-    public function showLogin(Request $request, Response $response): Response
-    {
+    public function showLogin(Request $request, Response $response): Response {
         $token = bin2hex(random_bytes(32));
         $_SESSION['csrf_token'] = $token;
 
@@ -86,9 +81,7 @@ class AuthController extends BaseController
         ]);
     }
 
-    public function login(Request $request, Response $response): Response
-    {
-        // TODO: call corresponding service to perform user login, handle login failures
+    public function login(Request $request, Response $response): Response {
         $this->logger->info('Login process initialized');
 
         $data = $request->getParsedBody();
@@ -104,9 +97,7 @@ class AuthController extends BaseController
         ])->withStatus(302);
     }
 
-    public function logout(Request $request, Response $response): Response
-    {
-        // TODO: handle logout by clearing session data and destroying session
+    public function logout(Request $request, Response $response): Response {
 
         $this->logger->info('Logout action requested');
         $this->authService->logout();

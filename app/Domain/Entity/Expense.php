@@ -19,14 +19,30 @@ final class Expense
         private ?DateTimeImmutable $deletedAt=null,
     ) {}
 
-    public function getId(): ?int { return $this->id; }
-    public function getUserId(): int { return $this->userId; }
-    public function getDate(): DateTimeImmutable { return $this->date; }
-    public function getCategory(): string { return $this->category; }
-    public function getAmountCents(): float { return $this->amountCents; }
-    public function getDescription(): string { return $this->description; }
-    public function isDeleted(): int { return $this->isDeleted; }
-    public function getDeletedAt(): ?DateTimeImmutable { return $this->deletedAt; }
+    public function getId(): ?int {
+        return $this->id;
+    }
+    public function getUserId(): int {
+        return $this->userId;
+    }
+    public function getDate(): DateTimeImmutable {
+        return $this->date;
+    }
+    public function getCategory(): string {
+        return $this->category;
+    }
+    public function getAmountCents(): float {
+        return $this->amountCents;
+    }
+    public function getDescription(): string {
+        return $this->description;
+    }
+    public function isDeleted(): int {
+        return $this->isDeleted;
+    }
+    public function getDeletedAt(): ?DateTimeImmutable {
+        return $this->deletedAt;
+    }
 
     public function setDate(DateTimeImmutable $date): void {
         $this->date = $date;

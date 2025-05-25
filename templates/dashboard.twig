@@ -5,8 +5,6 @@
 
     <section class="mb-8">
         <h2 class="text-xl font-bold mb-4">Overspending Alerts</h2>
-        {# TODO: you have below examples for both success and failure messages #}
-        {# TODO: customize the markup below for the actual alerts #}
         {% if alerts %}
             {% for category, value in alerts %}
                 <div class="bg-red-900/50 border border-red-700 rounded-lg p-4">
@@ -23,7 +21,6 @@
     <section>
         <h2 class="text-xl font-bold mb-4">Monthly Expenses Summary</h2>
         <form action="" method="get" class="mb-4 flex gap-4 items-center">
-            {# TODO: remove mock data below, pass actual years having expenses from the controller #}
             <select name="year" class="bg-gray-700 text-gray-100 rounded px-3 py-2">
                 {% for y in years %}
                     <option value="{{ y }}"
@@ -33,7 +30,6 @@
                 {% endfor %}
             </select>
 
-            {# TODO: add the "selected" attribute to the current displayed month #}
             <select name="month" class="bg-gray-700 text-gray-100 rounded px-3 py-2">
                 {% for month in [1,2,3,4,5,6,7,8,9,10,11,12] %}
                     <option value="{{ month }}"
@@ -56,7 +52,6 @@
         </div>
 
         {% set colors = ['orange','lime','blue','amber','green','yellow','violet','emerald','purple','teal','fuchsia'] %}
-        {# TODO: replace the static data below with actual per-category totals passed from the controller #}
 
         <div class="mt-6">
             <h3 class="text-lg font-bold mb-2">Per-category <strong>totals</strong> for month {{ selectedMonth }} of {{ selectedYear }}</h3>
@@ -72,7 +67,6 @@
             </div>
         </div>
 
-        {# TODO: follow the example above and replicate the markup and twig logic for the averages below #}
         <div class="mt-6">
             <h3 class="text-lg font-bold mb-2">Per-category <strong>averages</strong> for month {{ selectedMonth }} of {{ selectedYear }}</h3>
             <div class="space-y-4 mb-2">

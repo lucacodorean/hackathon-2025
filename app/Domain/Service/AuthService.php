@@ -15,12 +15,7 @@ class AuthService
         private readonly UserRepositoryInterface $users,
     ) {}
 
-    public function register(string $username, string $password, string $csrf): ?User
-    {
-        // TODO: check that a user with same username does not exist, create new user and persist
-        // TODO: make sure password is not stored in plain, and proper PHP functions are used for that
-
-        // TODO: here is a sample code to start with
+    public function register(string $username, string $password, string $csrf): ?User {
 
         // I'm using the default password hashing algorithm, which is BCRYPT.
         // I managed to develop exceptions, so the registration process is much cleaner.
@@ -44,12 +39,7 @@ class AuthService
         return $user;
     }
 
-    public function attempt(string $username, string $password): bool
-    {
-        // TODO: implement this for authenticating the user
-        // TODO: make sur ethe user exists and the password matches
-        // TODO: don't forget to store in session user data needed afterwards
-
+    public function attempt(string $username, string $password): bool {
         /// The following if statements validate the credentials and the existence of the user in the database.
         $user = $this->users->findByUsername($username);
         if(!$user || !password_verify($password, $user->getPasswordHash())) {

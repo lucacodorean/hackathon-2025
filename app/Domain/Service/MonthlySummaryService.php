@@ -75,8 +75,6 @@ class MonthlySummaryService
 
     public function computePerCategoryAverages(User $user, int $year, int $month): array
     {
-        // TODO: compute averages for year-month for a given user
-
         $criteria = $this->computeParameters($user, $year, $month);
 
         $data = $this->expenses->averageAmountsByCategory($criteria);

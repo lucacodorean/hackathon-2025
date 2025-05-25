@@ -18,7 +18,6 @@ class DashboardController extends BaseController
 {
     public function __construct(
         Twig $view,
-        // TODO: add necessary services here and have them injected by the DI container
         private readonly MonthlySummaryService $summaryService,
         private readonly ExpenseService $expenseService,
         private readonly AuthService $authService,
@@ -30,13 +29,6 @@ class DashboardController extends BaseController
 
     public function index(Request $request, Response $response): Response
     {
-        // TODO: parse the request parameters
-        // TODO: load the currently logged-in user
-        // TODO: get the list of available years for the year-month selector
-        // TODO: call service to generate the overspending alerts for current month
-        // TODO: call service to compute total expenditure per selected year/month
-        // TODO: call service to compute category totals per selected year/month
-        // TODO: call service to compute category averages per selected year/month
 
         $selectedYear = $request->getQueryParams()['year'] ?? date("Y");
         $selectedMonth = $request->getQueryParams()['month'] ?? date("m");

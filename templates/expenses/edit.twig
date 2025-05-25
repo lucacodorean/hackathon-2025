@@ -10,7 +10,6 @@
                 </div>
             {% endfor %}
         {% endif %}
-        {# TODO: customize the form below as needed, make sure to populate with edited expense values #}
         {{ expense.getDescription() }}
         <form action="/expenses/{{ expense.id }}" method="POST" class="max-w-sm mx-auto">
             <div class="mb-4 flex items-center">
@@ -21,7 +20,6 @@
             </div>
             <div class="mb-4 flex items-center">
                 <label for="category" class="w-24 text-gray-300 font-bold">Category:</label>
-                {# TODO: populate with configured expense categories instead of the mock values #}
                 <select id="category" name="category" required
                         class="flex-1 shadow appearance-none border rounded py-2 px-3 bg-gray-700 text-gray-100 leading-tight focus:outline-none focus:shadow-outline">
                     {% for label in categories %}
