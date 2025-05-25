@@ -45,8 +45,8 @@ class ExpenseController extends BaseController
         $pageSize = (int)($request->getQueryParams()['pageSize'] ?? self::PAGE_SIZE);
 
         $page = $page < 0 ? 1 : $page;
-
-
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
         $selectedYear = $request->getQueryParams()['year'] ?? date("Y");
         $selectedMonth = $request->getQueryParams()['month'] ?? date("m");
 
@@ -77,6 +77,7 @@ class ExpenseController extends BaseController
                 'from'                  => ($page - 1) * $pageSize + 1,
                 'to'                    => min($page * $pageSize, $expensesCount),
                 'pageSize'              => $pageSize,
+                'flash'                 => $flash,
             ]);
 
         } catch (NotAuthorizedException) {
@@ -228,16 +229,8 @@ class ExpenseController extends BaseController
         // - call the repository method to delete the expense
         // - redirect to the "expenses.index" page
 
-        try {
-            $expenseId = isset($routeParams['id']) ? (int) $routeParams['id'] : -1;
-            $this->expenseService->delete($this->authService->retrieveLogged(), $expenseId);
-        }
-        catch (NotAuthorizedException) {
-            throw new HttpForbiddenException($request);
-        }
-        catch(ResourceNotFoundException) {
-            throw new HttpNotFoundException($request);
-        }
+        $expenseId = isset($routeParams['id']) ? (int) $routeParams['id'] : -1;
+        $deleted = $this->expenseService->delete($this->authService->retrieveLogged(), $expenseId);
 
         return $response
             ->withHeader('Location', '/expenses' . $request->getUri()->getQuery())

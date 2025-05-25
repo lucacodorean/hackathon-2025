@@ -13,6 +13,19 @@
     </a>
 
     <section class="mb-8">
+        {% if flash %}
+            {% set colorMap = {
+                'success': 'green',
+                'danger':  'red',
+                'warning': 'orange',
+                'info':    'blue'
+            } %}
+
+            <div class="alert alert-{{ flash.type }} text-{{colorMap[flash.type]}}-400 text-center font-bold">
+                Note: {{ flash.message }}
+            </div>
+        {% endif %}
+
         <h2 class="text-xl font-bold mb-4">List monthly expenses</h2>
         {# Listing filters #}
         <form action="/expenses" method="GET" class="mb-6 flex gap-4">

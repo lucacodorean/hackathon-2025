@@ -119,7 +119,7 @@ class ExpenseService
         /// A possible fix is to consider only the [.] Part of the number, or to convert the entire number (considering)
         /// the floating part to an integer.
         ///
-        ///  For simplicity, the implemented solution is just handling the conversion.
+        /// For simplicity, the implemented solution is just handling the conversion.
 
         if(!$expense) {
             throw new ResourceNotFoundException("Expense not found.");
@@ -133,17 +133,28 @@ class ExpenseService
         $this->expenses->save($expense);
     }
 
-    public function delete(User $user, $expense_id): void {
+    private function setFlash(string $type, string $message): void {
+        $_SESSION["flash"] = [
+            "type"      => $type,
+            "message"   => $message,
+        ];
+    }
+    public function delete(User $user, $expense_id): int {
         $expense = $this->expenses->find($expense_id);
         if(!$expense) {
-            throw new ResourceNotFoundException("Expense not found.");
+            $this->setFlash("warning", "Expense not found.");
+            return 1;
+
         }
 
         if($user->getId() != $expense->getUserId()) {
-            throw new NotAuthorizedException("Not authorized to delete expense");
+            $this->setFlash("warning", "Not authorized to delete expense");
+            return 1;
         }
 
         $this->expenses->delete($expense->getId());
+        $this->setFlash("success", "Expense deleted.");
+        return 0;
     }
 
     public function listExpenditureYears(User $user): array {
@@ -168,7 +179,17 @@ class ExpenseService
         // come. Thus, the visited list is just enough.
         // This method should call the infrastructure layer that interacts with the database.
 
-        return $this->expenses->importCsv($user, $csvFile);
+        $imported = $this->expenses->importCsv($user, $csvFile);
+
+        if($imported > 0) {
+            $this->setFlash("success", "Successfully imported $imported records.");
+        }
+        else  {
+            $this->setFlash("error", "Error at importing the records.");
+        }
+
+
+        return $imported;
     }
 
     public function find(int $id): ?Expense {
