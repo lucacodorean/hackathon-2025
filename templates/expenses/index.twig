@@ -115,7 +115,7 @@
                 <div>
                     <nav class="isolate inline-flex -space-x-px rounded-md shadow-xs" aria-label="Pagination">
                         {% set prevPage = page > 1 ? page - 1 : 1 %}
-                        <a href="/expenses?page={{ prevPage }}"
+                        <a href="/expenses?page={{ prevPage }}&year={{ selectedYear }}&month={{ selectedMonth }}"
                            class="relative inline-flex items-center rounded-l-md px-2 py-2 text-white-700 ring-1 ring-gray-300 ring-inset
                                 {{ page == 1 ? 'cursor-not-allowed text-white-900' : 'hover:bg-gray-700' }} "aria-disabled="{{ page == 1 }}">
                             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -124,7 +124,7 @@
                             </svg>
                         </a>
 
-                        <a href="/expenses?page={{ 1 }}"
+                        <a href="/expenses?page={{ 1 }}&year={{ selectedYear }}&month={{ selectedMonth }}"
                            class="relative inline-flex items-center px-4 py-2 text-sm font-semibold
                            {{ page == 1
                            ? 'z-10 bg-blue-700 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400'
@@ -133,39 +133,41 @@
                             {{ 1 }}
                         </a>
 
-                        {% if page > 2 %}
-                        <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white-700 ring-1 ring-inset ring-gray-300">...</span>
-                        {% endif %}
-
-                        {% if lastPage <= 4 %}
-                            {% set pages = 2..lastPage %}
-                        {% elseif page + 2 < lastPage %}
-                            {% set pages = page..(page + 2) %}
-                            {% set pages = pages|merge(['...'])|merge([lastPage]) %}
-                        {% else %}
-                            {% set pages = page..lastPage %}
-                        {% endif %}
-
-                        {# render links/spans #}
-                        {% for p in pages %}
-                            {% if p == '...' %}
-                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white-700 ring-1 ring-inset ring-gray-300">...</span>
-                            {% else %}
-                                {% if p != 1 %}
-                                    <a href="/expenses?page={{ p }}"
-                                       class="relative inline-flex items-center px-4 py-2 text-sm font-semibold
-                                    {{ p == page
-                                       ? 'z-10 bg-blue-700 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                                       : 'text-white-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-700 focus:outline-offset-0' }}"
-                                       aria-current="{{ p == page ? 'page' }}">
-                                        {{ p }}
-                                    </a>
-                                {% endif %}
+                        {% if lastPage != 1 %}
+                            {% if page > 2 %}
+                            <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white-700 ring-1 ring-inset ring-gray-300">...</span>
                             {% endif %}
-                        {% endfor %}
+
+                            {% if lastPage <= 4 %}
+                                {% set pages = 2..lastPage %}
+                            {% elseif page + 2 < lastPage %}
+                                {% set pages = page..(page + 2) %}
+                                {% set pages = pages|merge(['...'])|merge([lastPage]) %}
+                            {% else %}
+                                {% set pages = page..lastPage %}
+                            {% endif %}
+
+                            {# render links/spans #}
+                            {% for p in pages %}
+                                {% if p == '...' %}
+                                    <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white-700 ring-1 ring-inset ring-gray-300">...</span>
+                                {% else %}
+                                    {% if p != 1 %}
+                                        <a href="/expenses?page={{ p }}&year={{ selectedYear }}&month={{ selectedMonth }}"
+                                           class="relative inline-flex items-center px-4 py-2 text-sm font-semibold
+                                        {{ p == page
+                                           ? 'z-10 bg-blue-700 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                                           : 'text-white-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-700 focus:outline-offset-0' }}"
+                                           aria-current="{{ p == page ? 'page' }}">
+                                            {{ p }}
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
 
                         {% set nextPage = page < lastPage ? page + 1 : lastPage %}
-                        <a href="/expenses?page={{ nextPage }}"
+                        <a href="/expenses?page={{ nextPage }}&year={{ selectedYear }}&month={{ selectedMonth }}"
                            class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset
                                 {{ page == lastPage ? 'cursor-not-allowed text-white-900' : 'hover:bg-gray-50' }}" aria-disabled="{{ page == lastPage }}">
                             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
